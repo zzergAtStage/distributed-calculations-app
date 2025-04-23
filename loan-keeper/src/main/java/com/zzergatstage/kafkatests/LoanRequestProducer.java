@@ -1,27 +1,25 @@
 package com.zzergatstage.kafkatests;
 
 
+import com.zzergatstage.domain.Loan;
+import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.springframework.stereotype.Component;
 
 import java.util.Properties;
 
 /**
  * Simple producer that sends an arbitrary message passed as argv[0].
  */
+@Component
+@RequiredArgsConstructor
+public class LoanRequestProducer {
 
-public class ProducerApp {
-    /**
-     * Entrypoint
-     * @param args first argument is the message text
-     */
-    public static void main(String[] args) {
-        if (args.length != 1) {
-            System.err.println("Usage: ProducerApp <message>");
-            System.exit(64);
-        }
+    public void produceRequest(Loan loan) {
+
         // --- Configure -----------------------------------------------------
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
@@ -33,7 +31,7 @@ public class ProducerApp {
         try (Producer<String, String> producer = new KafkaProducer<>(props)) {
             // --- Send -------------------------------------------------------
             ProducerRecord<String, String> record =
-                    new ProducerRecord<>("poc.events", "key1", args[0]);
+                    new ProducerRecord<>("poc.events", "key1", "stub");
             producer.send(record, (meta, ex) -> {
                 if (ex == null) {
                     System.out.printf("Message stored in %s-%d @ offset %d%n",

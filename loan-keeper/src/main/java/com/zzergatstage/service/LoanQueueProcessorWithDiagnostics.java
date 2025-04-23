@@ -31,7 +31,7 @@ public class LoanQueueProcessorWithDiagnostics {
 
         // Start processing threads
         for (int i = 0; i < numThreads; i++) {
-            executor.submit(new LoanWorker(loanQueue, processedCounter));
+            executor.submit(new RIP_LoanWorker(loanQueue, processedCounter));
         }
 
         executor.shutdown();

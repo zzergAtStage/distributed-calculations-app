@@ -9,11 +9,11 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Worker task that continuously pulls loans from the queue
  */
-public class LoanWorker implements Runnable {
+public class RIP_LoanWorker implements Runnable {
     private final BlockingQueue<Loan> loanQueue;
     private final AtomicLong processedCounter;
 
-    public LoanWorker(BlockingQueue<Loan> loanQueue, AtomicLong processedCounter) {
+    public RIP_LoanWorker(BlockingQueue<Loan> loanQueue, AtomicLong processedCounter) {
         this.loanQueue = loanQueue;
         this.processedCounter = processedCounter;
     }
