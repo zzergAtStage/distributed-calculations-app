@@ -1,28 +1,43 @@
-# docker-compose.kafka.yml  – single‑node KRaft cluster
+# ── docker-compose.kafka.yaml ──
+#
+# Single‐node Apache Kafka 4.x (KRaft mode), running on a “side” Windows/WSL machine.
+# The Mac IDE will connect to this broker by using the environment variable KAFKA_HOST_IP.
+
 services:
   kafka:
-    image: apache/kafka:4.0.0          # official image
+    image: apache/kafka:4.0.0
     container_name: kafka
     hostname: kafka
     ports:
-      - 9092:9092                      # plaintext client port
-      - 9093:9093                      # controller:admin (internal)
-#    environment:
-      # === KRaft configuration ===============================
-#      CLUSTER_ID: "demo-cluster-$(uuidgen | tr -d '-')"
-#      KAFKA_NODE_ID: 1
-#      KAFKA_PROCESS_ROLES: "broker,controller"
-#      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
-      # === Mandatory broker basics ===========================
-#      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
-#      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:9092"
-#      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
-#      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
-#      KAFKA_NUM_PARTITIONS: 1
-#      KAFKA_LOG_DIRS: "/var/lib/kafka/data"
-      # === Convenience tweaks for local dev ==================
-      # KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      # KAFKA_DELETE_TOPIC_ENABLE: "true"
+      - 9092:9092  # Kafka client port
+      - 9093:9093  # Controller listener (internal)
+
+    environment:
+      # === Networking (allow external Mac to connect)
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+        # ── Advertised address (what clients use to connect) ──
+        # We reference KAFKA_HOST_IP, which must be set on the side machine at runtime.
+        # Example (PowerShell): $env:KAFKA_HOST_IP = (Get-NetIPAddress -AddressFamily IPv4 -InterfaceAlias "Ethernet").IPAddress
+        #          (or simply: set KAFKA_HOST_IP=192.168.1.113)
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://${KAFKA_HOST_IP}:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS: 1
+      # === KRaft mode (no ZooKeeper)
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      CLUSTER_ID: "demo-cluster-id"  # hardcoded for stability (or generate once and persist)
+
+      # === Dev Convenience
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+
+      # === Broker settings
+      KAFKA_NUM_PARTITIONS: 1
+      KAFKA_LOG_DIRS: "/var/lib/kafka/data"
+
     volumes:
       - kafka_data:/var/lib/kafka/data
     restart: unless-stopped
